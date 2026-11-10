@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description" content="Painel IoT para monitoramento industrial e controle remoto via MQTT.">
+    <meta name="keywords" content="IoT, MQTT, HiveMQ, monitoramento, ESP32">
+    <meta name="author" content="Luiz Valle e Lívia Ambrósio">
+
+    <title>SmartControl | Monitoramento IoT</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Biblioteca Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Biblioteca MQTT.js -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+    <!-- JavaScript do projeto -->
+    <script src="app.js" defer></script>
+</head>
+
+<body>
+
+    <header class="cabecalho">
+        <div class="logo">
+            <span class="logo-icone">⚡</span>
+            <h1>SmartControl</h1>
+        </div>
+
+        <nav aria-label="Navegação principal">
+            <ul class="menu">
+                <li><a href="#inicio">Início</a></li>
+                <li><a href="#telemetria">Telemetria</a></li>
+                <li><a href="#controle">Controle</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main id="inicio">
+
+        <section class="apresentacao">
+            <div>
+                <p class="subtitulo">MONITORAMENTO EM TEMPO REAL</p>
+                <h2>Painel de Controle Inteligente</h2>
+
+                <p>
+                    Monitore a velocidade do motor e controle o sistema
+                    industrial por meio da comunicação MQTT.
+                </p>
+            </div>
+
+            <div class="status-sistema" id="statusConexao">
+                <span class="status-indicador"></span>
+                <span id="textoConexao">Conectando...</span>
+            </div>
+        </section>
+
+        <section id="telemetria" class="telemetria">
+
+            <div class="titulo-secao">
+                <div>
+                    <p class="subtitulo">DADOS DO SISTEMA</p>
+                    <h2>Telemetria</h2>
+                </div>
+
+                <p class="atualizacao" id="ultimaAtualizacao">
+                    Aguardando dados...
+                </p>
+            </div>
+
+            <div class="grid-cards">
+
+                <article class="card">
+                    <div class="card-topo">
+                        <span class="icone">⚙️</span>
+                        <span class="variacao">RPM</span>
+                    </div>
+
+                    <p>Velocidade do motor</p>
+                    <strong id="rpm">--</strong>
+                    <span class="descricao">Rotações por minuto</span>
+                </article>
+
+                <article class="card">
+                    <div class="card-topo">
+                        <span class="icone">🔌</span>
+                        <span class="variacao">Estado</span>
+                    </div>
+
+                    <p>Status do motor</p>
+                    <strong id="estadoMotor">Aguardando</strong>
+                    <span class="descricao">Estado do sistema industrial</span>
+                </article>
+
+                <article class="card">
+                    <div class="card-topo">
+                        <span class="icone">⚠️</span>
+                        <span class="variacao">Segurança</span>
+                    </div>
+
+                    <p>Limite de segurança</p>
+                    <strong>3500 RPM</strong>
+                    <span class="descricao">Limite máximo configurado</span>
+                </article>
+
+                <article class="card">
+                    <div class="card-topo">
+                        <span class="icone">📡</span>
+                        <span class="variacao">MQTT</span>
+                    </div>
+
+                    <p>Conexão</p>
+                    <strong id="conexao">Offline</strong>
+                    <span class="descricao">Comunicação com HiveMQ</span>
+                </article>
+
+            </div>
+
+            <div class="grafico-container">
+                <div class="grafico-topo">
+                    <div>
+                        <p class="subtitulo">ACOMPANHAMENTO</p>
+                        <h3>Histórico de velocidade</h3>
+                    </div>
+
+                    <span class="unidade">RPM</span>
+                </div>
+
+                <div class="grafico-area">
+                    <canvas id="graficoTelemetria"></canvas>
+                </div>
+            </div>
+
+        </section>
+
+        <section id="controle" class="controle">
+
+            <div class="titulo-secao">
+                <div>
+                    <p class="subtitulo">GERENCIAMENTO</p>
+                    <h2>Acionamento do Sistema</h2>
+                </div>
+            </div>
+
+            <div class="grid-controles">
+
+                <article class="controle-card">
+                    <div>
+                        <span class="icone">▶️</span>
+
+                        <div>
+                            <h3>Reiniciar motor</h3>
+                            <p>Solicita a retomada do funcionamento.</p>
+                        </div>
+                    </div>
+
+                    <button
+                        class="botao ativo"
+                        id="botaoReset"
+                        type="button">
+                        Reiniciar
+                    </button>
+                </article>
+
+                <article class="controle-card">
+                    <div>
+                        <span class="icone">🛑</span>
+
+                        <div>
+                            <h3>Parada de emergência</h3>
+                            <p>Solicita o desligamento imediato do motor.</p>
+                        </div>
+                    </div>
+
+                    <button
+                        class="botao alerta"
+                        id="botaoEmergencia"
+                        type="button">
+                        Parar motor
+                    </button>
+                </article>
+
+            </div>
+
+            <p id="mensagemControle" class="mensagem-controle">
+                Aguardando conexão com o sistema.
+            </p>
+
+        </section>
+
+        <section class="historico">
+
+            <div class="titulo-secao">
+                <div>
+                    <p class="subtitulo">REGISTROS</p>
+                    <h2>Histórico de eventos</h2>
+                </div>
+            </div>
+
+            <div id="listaEventos" class="lista-eventos">
+                <p>Nenhum evento recebido ainda.</p>
+            </div>
+
+        </section>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2026 SmartControl | Luiz Valle e Lívia Ambrósio</p>
+        <p>Monitoramento IoT com ESP32, MQTT e HiveMQ</p>
+    </footer>
+
+</body>
+</html>
